@@ -87,3 +87,14 @@ def test_from_dicts_inconsistent_keys(
 
     result = nw.from_dicts(data, backend=eager_implementation)
     assert result.columns == ["a", "b"]
+
+
+def test_from_dicts_categorical(eager_backend: EagerAllowed) -> None:
+    # Categorical used to raise ArrowInvalid (int32 vs uint32 dictionary indices) on the
+    # pyarrow backend.
+    schema = {"a": nw.Categorical(), "b": nw.Int64()}
+    result = nw.from_dicts(
+        [{"a": "x", "b": 1}, {"a": "y", "b": 2}], backend=eager_backend, schema=schema
+    )
+    assert result.collect_schema() == schema
+    assert_equal_data(result, {"a": ["x", "y"], "b": [1, 2]})

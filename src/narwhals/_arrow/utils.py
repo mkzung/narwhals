@@ -206,7 +206,9 @@ NW_TO_PA_DTYPES: Mapping[type[DType], pa.DataType] = {
     dtypes.Binary: pa.binary(),
     dtypes.String: pa.string(),
     dtypes.Boolean: pa.bool_(),
-    dtypes.Categorical: pa.dictionary(pa.uint32(), pa.string()),
+    # PyArrow ignores an unsigned index type when it builds a dictionary array from Python
+    # values, so a uint32 index here breaks `new_series` and `from_dicts` (see #3775).
+    dtypes.Categorical: pa.dictionary(pa.int32(), pa.string()),
     dtypes.Date: pa.date32(),
     dtypes.Time: pa.time64("ns"),
     dtypes.Int8: pa.int8(),
